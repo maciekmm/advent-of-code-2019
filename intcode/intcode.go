@@ -104,13 +104,21 @@ func (p program) Fork() program {
 }
 
 type Computer struct {
-	prog   program
+	Memory program
 	Input  chan int
 	Output chan int
 }
 
 func (c *Computer) Run() {
-	c.prog.Run(c.Input, c.Output)
+	c.Memory.Run(c.Input, c.Output)
+}
+
+func (c *Computer) Fork() *Computer {
+	return &Computer{
+		Memory: c.Memory.Fork(),
+		Input:  make(chan int, 1),
+		Output: make(chan int, 1),
+	}
 }
 
 func LoadFile(in string) (*Computer, error) {
@@ -132,7 +140,7 @@ func LoadFile(in string) (*Computer, error) {
 		program[pos] = intCode
 	}
 	return &Computer{
-		prog:   program,
+		Memory: program,
 		Input:  make(chan int, 1),
 		Output: make(chan int, 1),
 	}, nil
